@@ -1,0 +1,30 @@
+digraph G {
+
+    /* Entities */
+    game [label="Game", shape="ellipse"]
+    player1 [label="Player\n-player1", shape="ellipse"]
+    player2 [label="Player\n-player2", shape="ellipse"]
+    board1 [label="Board", shape="ellipse"]
+    board2 [label="Board", shape="ellipse"]
+    fleet1 [label="Fleet", shape="ellipse"]
+    fleet2 [label="Fleet", shape="ellipse"]
+
+    ship1 [label="Ships\n-carrier\n-battleship\n-submarine\n-cruiser\n-patrol", shape="ellipse"]
+    ship2 [label="Ships\n-carrier\n-battleship\n-submarine\n-cruiser\n-patrol", shape="ellipse"]    
+    #shape = |square,rectangle,circle,ellipse,triangle,plaintext,point,diamond,pentagon,hexagon,septagon,octagon,egg,trapezium,parallelogram,house,doublecircle,doubleoctagon,tripleoctagon,invtriangle,invtrapezium,invhouse,Mdiamond,Msquare,Mcircle,none,note,tab,folder,box3d|", URL="http://en.wikipedia.org/wiki/John de Fries"]
+    
+    /* Relationships */
+    game -> player1
+    game -> player2
+    player1 -> board1
+    player2 -> board2
+    player1 -> fleet1
+    player2 -> fleet2
+    fleet1 -> ship1
+    fleet2 -> ship2
+    board1 -> fleet2[style=dotted]
+    board2 -> fleet1[style=dotted]
+
+    /* Ranks */
+    #{ rank=|same,min,max,# max is bottom|; shortName; };
+}

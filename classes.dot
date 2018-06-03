@@ -1,0 +1,39 @@
+digraph G {
+
+    /* Entities */
+    game [label="Game", shape="ellipse"];
+    player [label="Player", shape="ellipse"];
+    board [label="Board", shape="ellipse"];
+    fleet [label="Fleet", shape="ellipse"];
+
+    ship [label="Ship\n(Base Class)", shape="ellipse"];
+    carrier [label="Carrier", shape="ellipse"];
+    battleship [label="Battleship", shape="ellipse"];
+    submarine [label="Submarine", shape="ellipse"];
+    cruiser [label="Cruiser", shape="ellipse"];
+    patrol [label="Patrol", shape="ellipse"];
+
+
+    edge [style=dotted];
+    game -> player;
+    player -> board;
+    player -> fleet;
+
+    fleet -> carrier;
+    fleet -> battleship;
+    fleet -> submarine;
+    fleet -> cruiser;
+    fleet -> patrol;
+
+    edge [style=solid];
+    ship -> carrier;
+    ship -> battleship;
+    ship -> submarine;
+    ship -> cruiser;
+    ship -> patrol;
+
+ 
+    /* Ranks */
+    { rank=same; carrier; battleship; submarine; cruiser; patrol;};
+    { rank=same; fleet; ship;};
+}
