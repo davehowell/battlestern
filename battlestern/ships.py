@@ -59,14 +59,14 @@ class Ship(object):
         a dictionary-like object with `column` and `row` keys.
 
     """
-    length = None
     orientations = ['horizontal', 'vertical']
-    lengths = [1, 2, 3, 4, 5]
 
     def __init__(self,
+                 length,
                  orientation,
                  bow_coordinate,
                  **kwargs):
+        self.length = length
         if orientation in self.orientations:
             self.orientation = orientation
         else:
@@ -81,39 +81,34 @@ class Ship(object):
                 'bow_coordinate must be an instance of BowCoordinate'
             )
 
-
 class Carrier(Ship):
     """
     The largest type of ship
     Most likely to be hit but can take the most hits so is resilient
     """
-    length = 5
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(length=5, **kwargs)
 
 class Battleship(Ship):
     """
     The second largest type of ship
     """
-    length = 4
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(length = 4, **kwargs)
 
 class Submarine(Ship):
     """
     A medium sized ship
     """
-    length = 3
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(length = 3, **kwargs)
 
 class Cruiser(Ship):
     """
     The second smallest ship
     """
-    length = 2
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(length = 2, **kwargs)
 
 class Patrol(Ship):
     """
@@ -121,9 +116,8 @@ class Patrol(Ship):
     Least likely to be hit
     Also the most vulnerable as a direct hit will sink it
     """
-    length = 1
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(length = 1, **kwargs)
 
 class Fleet(object):
     def __init__(self,
@@ -137,3 +131,35 @@ class Fleet(object):
         self.submarine = submarine,
         self.cruiser = cruiser,
         self.patrol = patrol
+
+# accept a ship setup (will be validated)
+# { 'carrier': { row: 1, col: 'a', orientation: 'horizontal'}, ... }
+
+
+# or generate a random one with no overlap
+# sequential random, check overlap of previous
+# e.g. 
+# place carrier. 
+#   1. rand horizontal or vertical.
+#   2. if h, nosecoord rand row(1-10) and rand col between a and (j - ascii(length=5))
+#   3. bag it
+# place battleship (and the rest, probably generalize carrier to this as well)
+#  1. same h/v
+#  2. same nosecoord
+#  3. check for collision with already placed ships in the bag
+#  4. if collision, start at 1 again
+#  5. else bag it
+# place rest of ships
+
+    # if ship.orientation = 'horizontal' then $col, row for row -> length 
+    # else  col, $row for col => length ( bin(ascii(col) + i )) some ascii & back conversion?
+# for ship in fleet, get coord, 
+# if True set false & return hit
+{ 'carrier' : { ('a', 1): True,
+                ('a', 2): True,
+                ('a', 3): True,
+                ('a', 4): True,
+                ('a', 5): True }
+
+
+    def strike(self,coords):
