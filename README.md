@@ -3,7 +3,53 @@ battlestern - a backend for the game battleship
 
 Based on [Battleship Code Challenge](https://github.com/ambiata/interview/blob/master/battleship.md)
 
-So Battleship was one of the first games to be computerized, including the 'talking battleship' version and 
+"Battleship was one of the earliest games to be produced as a computer game, with a version being released for the Z80 Compucolor in 1979." Wow and now I am doing it on Python in 2018, 39 years later. 
+
+## Requirements
+* Python 3.6.5
+Probably works with earlier Python 3 versions - not tested.
+Python 2 not supported.
+
+* Docker 
+Only if you want to run the tests that way, not essential
+
+* virtualenv for Python
+
+
+## Testing locally, with pytest and using Docker
+The Dockerfile uses python3.6.5, creates a virtualenv, installs required pip packages
+and launches the test runner, outputting results.
+
+To test locally run py.test or just run test scripts with python directly
+For Docker usage continue reading.
+
+
+### First time usage
+
+ build the docker image from the directory containing the Dockerfile
+```bash
+docker build -t battlestern .
+```
+
+
+### Build docker on Windows with OneDrive (obscure I know)
+On Windows if the project directory is inside a OneDrive managed path then use the powershell wrapper build-docker.ps1 instead.
+
+Make sure you have permissions to run powershell on your PC. If you never have then you will need to set it.
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
+Then run the Docker build script
+
+```powershell
+.\build-docker.ps1
+```
+
+### Run the docker image
+```bash
+docker run -it battlestern py.test --junitxml=/data/test_report.xml --cov-report xml:/data/coverage.xml
+```
 
 
 ## Classes
@@ -76,32 +122,41 @@ _This example layout is probably a terrible strategy, as all the ships are bunch
 * row and col here represent the `NoseCoordinate` of the ship. 
 * `battlestern` will validate the fleet layout to ensure 
    - none of the ships are overlapping in the grid
-   - all of the ship nosecoordinates and full length of coordinates are situated within the grid
+   - all of the ship coordinates are situated entirely within the grid
+   - validation will not raise errors, just return duplicates & out_of_bounds properties of a Fleet
+   this can be checked and dealt with as determined by the API client.
 
 ## Player Turns
 
-* A playername and a coordinate is required to call the `strike` function. 
+* A playername and a coordinate is required to call the `strike` function.
    - It will not reject duplicate coordinate attempts
-   - It will not prevent the same player from taking multiple consecutive turns
-   - 
+
 
 
 ## Final notes
 * No attempt at influencing garbage collection is made here, e.g. by decrementing reference counts. This can be done in the client if required.
 * The code is only tested in Python 3, I don't see any point in supporting Python 2 if it is not necessary.
-* Generating graph diagrams was done using dot command line (installed with graphviz)
+
+
+## Generating graph diagrams 
+This is done using dot files and the cli (installed with graphviz)
 e.g.
 ```bash
 dot -o classes.png -Tpng .\classes.dot
 dot -o game_objects.png -Tpng .\games_objects.dot
 ```
 
-## Taking it further
-This is a very limited start and these are some things I would do to take it further.
-* Complete test suites using [Pytest](https://docs.pytest.org/en/latest/)
-* Python3 Docker container to launch a python virtualenv & run all tests
+## TODOs
+I've started to do these things:
+
+* Docker container to launch a python virtualenv & run all tests
 * Use [typing](https://docs.python.org/3/library/typing.html) & MyPy for type hints. It's good enough for Guido & Dropbox, it's good enough for everyone.
-* Use sphynx for generating docs from all the module, class & function docstrings. I've already used the right syntax to make this straightforward.
+* Use [sphynx](http://www.sphinx-doc.org) for generating docs from all the module, class & function docstrings. I've already used the right syntax to make this straightforward.
+
+## Taking it further
+This is a very limited start and these are some things I would do to take it further:
+
+* Complete test suites using [Pytest](https://docs.pytest.org/en/latest/)
 * Use a persistent datastore, add 'gameid' to track multiple games and use a json file or SQLite at the very least, or Postgres or MongoDB if scaling is required.
 * Add a front end with pretty interactive UI. [Pygame](https://www.pygame.org) is an awesome library for that
 * Use processes for multiprocessing to allow the UI and multiple games to run, this is something that this library shouldn't worry about though, it's something for the client to manage.

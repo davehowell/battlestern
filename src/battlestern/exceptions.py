@@ -6,3 +6,9 @@ class OrientationError(BattlesternError):
 
 class CoordinateError(BattlesternError):
     pass
+
+class PlayerSetupError(BattlesternError):
+    pass
+
+class BoardError(BattlesternError):
+    pass

@@ -13,9 +13,13 @@ keep track of player and opponent (not the player)
 new_game(players, boards)
 
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from battlestern.boards import Board
-from battlestern.players import Player
+from .boards import Board
+from .players import Player
+from .ships import Fleet
 
 # players?
 
@@ -39,9 +43,9 @@ class Game(object):
         if player2name is None:
             self._player2name = 'Alice'
 
-        # FLEETS - Provided or Random - immutable
-        self._player1fleet = create_fleet(fleet=player1fleet)
-        self._player2fleet = create_fleet(fleet=player2fleet)
+
+        self._player1fleet = create_fleet(fleetroster=player1fleet)
+        self._player2fleet = create_fleet(fleetroster=player2fleet)
 
         self._player1 = Player(player1name, player1fleet)
         self._player2 = Player(player2name, player2fleet)
@@ -72,20 +76,38 @@ class Game(object):
 
     @property
     def player1fleet(self):
+        """
+        Player fleets are immutable
+        """
         return self._player1fleet
 
     @property
     def player2fleet(self):
+        """
+        Player fleets are immutable
+        """
         return self._player2fleet
 
 
-    def create_fleet(self, fleet):
-        if fleet is None:
-            # ships.random_fleet() ?
-        else:
-            # ships.specified_fleet()
+    def create_fleet(self, fleetroster):
+        """
+        Created from a specified ship layout, or if None will be generated.
 
+        :param fleetroster: A set of ships and positional properties, 
+            bow_coordinates & orientation
+        :type fleetroster: A dictionary (JSON-like) or None
+            In this format:
+            { 'carrier': { col: 'a', row: 1, orientation: 'horizontal'}, ... }
+            Keys must be one of carrier|battleship|submarine|cruiser|patrol
+            col must a letter a through f
+            row must be an integer 1 through 10
+            orientation must be one of horizontal|vertical
+        
+        Returns a new battlestern.ships.Fleet instance
+        """
+        return Fleet(fleetroster=fleetroster)
 
+    
     def get_opponent(self, playername):
         if playername == self.player1.name:
             return self.player2
