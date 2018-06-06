@@ -1,66 +1,18 @@
 #!/usr/bin/env python3
 
 from typing import Set, Tuple, Dict, List, Union, Mapping
-from collections.abc import Mapping as BaseMapping
 from pprint import pprint
 import random
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
+from battlestern.coordinates import Coordinate
 from battlestern.exceptions import OrientationError, CoordinateError
 
-class BowCoordinate(BaseMapping):
-    """
-    The coordinates of the bow of a ship.
     This, along with the orientation and the length of a ship
     uniquely define its placement on the board
 
-    :param col: A valid column reference on the board
-    :type col: string, one of the letters from a to j
-    :param row: A valid row reference on the board
-    :type row: int, between 1 and 10
-    """
-
-    allowedkeys: List[str] = ['col', 'row']
-    allowedcols: List[str] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-    allowedrows: List[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-    def __init__(self, *args, **kwargs: str) -> None:
-        """
-
-        """
-        keyset = set(self.allowedkeys)
-        colset = set(self.allowedcols)
-        rowset = set(self.allowedrows)
-        if kwargs.keys() & keyset != keyset:
-            raise CoordinateError(
-                'Coordinates can only have a `col` and a `row` not these: {}'
-                .format(', '.join(kwargs.keys()))
-                )
-        if kwargs.get('col') not in colset:
-            raise CoordinateError(
-                'col must be one of {}'
-                .format(','.join(colset))
-                )
-        if kwargs.get('row') not in rowset:
-            raise CoordinateError(
-                'row must be one of {}'
-                .format(','.join(rowset))
-                )
-        self._storage = dict(*args, **kwargs)
-
-    def __getitem__(self, key):
-        if key not in ['col', 'row']:
-            raise CoordinateError(
-                'Coordinates only have a `col` and a `row`')
-        return self._storage[key]
-
-    def __iter__(self):
-        return iter(self._storage)
-
-    def __len__(self):
-        return len(self._storage)
 
 class Ship(object):
     """
@@ -72,7 +24,7 @@ class Ship(object):
         either `horizontal` or `vertical`
     :type orientation: string
     :param bow_coordinate: The coordinates on the board for the bow of the ship
-    :type bow_coordinate: An instance of battlestern.ship.BowCoordinate
+    :type bow_coordinate: battlestern.coordinates.Coordinate
         or a Mapping/dict-like object with `col` and `row` keys.
     """
     orientations = ['horizontal', 'vertical']
@@ -90,11 +42,11 @@ class Ship(object):
                 'orientation must be one of {}'
                 .format(', '.join(self.orientations)))
 
-        if isinstance(bow_coordinate, BowCoordinate):
+        if isinstance(bow_coordinate, Coordinate):
             self.bow_coordinate = bow_coordinate
         else:
             raise CoordinateError(
-                'bow_coordinate must be an instance of BowCoordinate'
+                'Ship bow_coordinate must be of type Coordinate'
             )
 
 class Carrier(Ship):
@@ -107,7 +59,7 @@ class Carrier(Ship):
     :type orientation: string
 
     :param bow_coordinate: The coordinates on the board for the bow of the ship
-    :type bow_coordinate: An instance of battlestern.ship.BowCoordinate
+    :type bow_coordinate: An instance of battlestern.coordinates.Coordinate
         or a Mapping/dict-like object with `col` and `row` keys.
     """
     def __init__(self, **kwargs):
@@ -122,7 +74,7 @@ class Battleship(Ship):
         either `horizontal` or `vertical`
     :type orientation: string
     :param bow_coordinate: The coordinates on the board for the bow of the ship
-    :type bow_coordinate: An instance of battlestern.ship.BowCoordinate
+    :type bow_coordinate: An instance of battlestern.coordinates.Coordinate
         or a Mapping/dict-like object with `col` and `row` keys.
     """
     def __init__(self, **kwargs):
@@ -137,7 +89,7 @@ class Submarine(Ship):
         either `horizontal` or `vertical`
     :type orientation: string
     :param bow_coordinate: The coordinates on the board for the bow of the ship
-    :type bow_coordinate: An instance of battlestern.ship.BowCoordinate
+    :type bow_coordinate: An instance of battlestern.coordinates.Coordinate
         or a Mapping/dict-like object with `col` and `row` keys.    
     """
     def __init__(self, **kwargs):
@@ -152,7 +104,7 @@ class Cruiser(Ship):
         either `horizontal` or `vertical`
     :type orientation: string
     :param bow_coordinate: The coordinates on the board for the bow of the ship
-    :type bow_coordinate: An instance of battlestern.ship.BowCoordinate
+    :type bow_coordinate: An instance of battlestern.coordinates.Coordinate
         or a Mapping/dict-like object with `col` and `row` keys.    
     """
     def __init__(self, **kwargs):
@@ -169,7 +121,7 @@ class Patrol(Ship):
         either `horizontal` or `vertical`
     :type orientation: string
     :param bow_coordinate: The coordinates on the board for the bow of the ship
-    :type bow_coordinate: An instance of battlestern.ship.BowCoordinate
+    :type bow_coordinate: An instance of battlestern.coordinates.Coordinate
         or a Mapping/dict-like object with `col` and `row` keys.    
     """
     def __init__(self, **kwargs):
@@ -236,7 +188,7 @@ class Fleet(object):
         for ship, specs in fleetroster:
             ship = self.shipyard[ship.lower()]
             loaded_fleet.append(ship(orientation=specs['orientation'],
-                 bow_coordinate=BowCoordinate(col=specs['col'],
+                 bow_coordinate=Coordinate(col=specs['col'],
                                               row=specs['row'])))
         return loaded_fleet
 
@@ -248,14 +200,14 @@ class Fleet(object):
         for shipname, shiptype in Fleet.shipyard:
             orientation = random.choice(Ship.orientations)
             if orientation == 'horizontal':
-                ringfence = len(BowCoordinate.allowedcols) - shiptype.length
-                col = random.choice(BowCoordinate.allowedcols[0:ringfence])
-                row = random.choice(BowCoordinate.allowedrows)
+                ringfence = len(Coordinate.allowedcols) - shiptype.length
+                col = random.choice(Coordinate.allowedcols[0:ringfence])
+                row = random.choice(Coordinate.allowedrows)
             else:
-                ringfence = len(BowCoordinate.allowedrows) - shiptype.length
-                col = random.choice(BowCoordinate.allowedcols)
-                row = random.choice(BowCoordinate.allowedrows[0:ringfence])
-            nose_coord = BowCoordinate(col=col, row=row)
+                ringfence = len(Coordinate.allowedrows) - shiptype.length
+                col = random.choice(Coordinate.allowedcols)
+                row = random.choice(Coordinate.allowedrows[0:ringfence])
+            nose_coord = Coordinate(col=col, row=row)
             fleetroster.setdefault(shipname, 
                     {'col':nose_coord['col'], 'row':nose_coord['row'], 'orientation': orientation})
         return fleetroster
@@ -272,6 +224,13 @@ class Fleet(object):
         A nested dictionary of ship subclass names for keys, pointing to values
         consisting of dictionaries using coordinates as keys and 'intact' or 'damaged'
         as values.
+
+        The data structure is indexed by ship.name and coordinate, useful for checking 
+        what coordinates a ship occupies it's O(1)
+        It's not optimised for the other operation, checking if any ship 
+        occupies a coordinate (i.e. seeing if a missle strike is a hit or miss) 
+        and would suffer for very large fleets. 
+        Luckily this game has 5 ships so the O(n) is trivial.
         """
         armada = {}
         for ship in loaded_fleet:
@@ -314,8 +273,8 @@ class Fleet(object):
                       if len(ships) > 1}
         out_of_bounds = {coord: ships 
                       for coord, ships in coord_to_ships.items() 
-                      if coord[0] not in BowCoordinate.allowedcols
-                      or coord[1] not in BowCoordinate.allowedrows}
+                      if coord[0] not in Coordinate.allowedcols
+                      or coord[1] not in Coordinate.allowedrows}
         return duplicates, out_of_bounds
 
 
@@ -323,14 +282,36 @@ class Fleet(object):
         """
         An attempted missile strike on a ship.
         Check if it hit a ship in the armada, if yes, mark it damaged at those coords
-        and return a hit.
+        and return a hit and random quote from the black knight,
+        in the grand (Python) tradition of random Monty Python references.
 
+        If a hit is the last coordinate of a ship to take damage it will return
+        the special message 'You sunk my {shipname}!' e.g. if it was the battleship
+        'You sunk my battleship!'
+        
         This method should be called by the opponent's board, not directly.
+
+        :param coordinates: Coordinates to land a missile strike on the opponent's fleet
+        :type coordinates: Tuple[str, int]
         """
+        hitmessages = ["It's just a flesh wound!",
+                        "'tis but a scratch",
+                        "had worse",
+                        "Right, I’ll do you for that",
+                        "I'm invincible!",
+                        "All right, we'll call it a draw.",
+                        "Come back here and take what's coming to ya!",
+                        "I'll bite your legs off!"
+                        ]
+
+        msg = 'You missed'
         for ship, coords in self.armada.items():
             for coord in coords.keys():
                 if coordinates == coord:
                     self.armada[ship][coord] = 'damaged'
-                    return 'hit'
-                else:
-                    return 'miss'
+                    msg = f'You sank my {ship.name} !'
+                    for damagereport in self.armada[ship].values():
+                        if damagereport = 'intact'
+                            msg = random.choice(hitmessages)
+                    return 'hit', msg
+        return 'miss' , msg

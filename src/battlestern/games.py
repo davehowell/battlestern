@@ -1,31 +1,34 @@
 #!/usr/bin/env python3
 """
-A game initializes and then needs
+Game is the entrypoint for the battlestern API
+Initializing a new game with battlestern requires:
 
-player names, default human & computer
+player names
+   defaults to Bob & Alice
    players have a board to track their strikes
-   and a fleet
+   players have a fleet which evaluates & stores strikes from the opponent.
+fleets
+    Can be passed in as manual ship placements
+    or default to random ship placements
 
-Random ship placements or
-Manual ship placements
+e.g.
+with no playernames or fleets provided:
+game = Game()
 
-keep track of player and opponent (not the player)
-new_game(players, boards)
+You can change player names: 
+game.player1.name = 'Eddy'
 
+You can assign a player fleet game.player1.fleet = 'thing'
 """
+
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from .boards import Board
 from .players import Player
-from .ships import Fleet
+from .boards import Board
+from battlestern.ships import Fleet
 
-# players?
-
-# game = Game()
-#You can change player names: game.player1.name = 'Eddy'
-#You can assign a player fleet game.player1.fleet = 'thing'
 
 class Game(object):
     def __init__(self,
@@ -33,9 +36,7 @@ class Game(object):
                  player2name=None,
                  player1fleet=None,
                  player2fleet=None):
-        #gameid?
-
-        # PLAYER NAMES - mutable
+ 
         self._player1name = player1name
         if player1name is None:
             self._player1name = 'Bob'
@@ -43,50 +44,33 @@ class Game(object):
         if player2name is None:
             self._player2name = 'Alice'
 
+        # Player names are public so shouldn't be the same value
+        if self._player1name == self._player2name:
+            self._player2name = self._player2name + '_1'
 
-        self._player1fleet = create_fleet(fleetroster=player1fleet)
-        self._player2fleet = create_fleet(fleetroster=player2fleet)
+        self._player1 = Player(name=player1name,number=1)
+        self._player2 = Player(name=player2name,number=2)
 
-        self._player1 = Player(player1name, player1fleet)
-        self._player2 = Player(player2name, player2fleet)
+        # dynamic attributes - Poor man's dependency injection
+        # Compose players with boards
+        self._player1.board = Board()
+        self._player2.board = Board()
+        # Compose players with fleets
+        self._player1.fleet = self.create_fleet(fleetroster=player1fleet)
+        self._player2.fleet = self.create_fleet(fleetroster=player2fleet)
 
-# player1 & 2 are objects initialized with names
-# can use default names
-# names can be updated
-# players have a fleet and a board
-# fleet can either be set up & provided
-# or if not passed in will be generated with random placement
-# boards & fleets cannot be altered. Need to start a new game.
+        # Compose player with opponent
+        self._player1.opponent = self._player2
+        self._player2.opponent = self._player1
+
 
     @property
     def player1(self):
         return self._player1
 
-    @player1.setter
-    def player1(self, player1):
-        self._player1 = player1
-
     @property
     def player2(self):
         return self._player2
-
-    @player2.setter
-    def player2(self, player2):
-        self._player2 = player2
-
-    @property
-    def player1fleet(self):
-        """
-        Player fleets are immutable
-        """
-        return self._player1fleet
-
-    @property
-    def player2fleet(self):
-        """
-        Player fleets are immutable
-        """
-        return self._player2fleet
 
 
     def create_fleet(self, fleetroster):
@@ -107,10 +91,9 @@ class Game(object):
         """
         return Fleet(fleetroster=fleetroster)
 
-    
-    def get_opponent(self, playername):
-        if playername == self.player1.name:
-            return self.player2
-        else:
-            return self.player1
 
+    def strike(self, player, coord):
+        result, message = player.opponent.fleet._strike(coord)
+        player.board.mark_strike(coord=coord, result=result)
+
+        return result, message

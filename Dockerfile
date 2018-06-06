@@ -20,4 +20,4 @@ COPY ./tests /opt/battlestern/tests
 
 
 #CMD [ "python", "./battlestern/ships.py"]
-CMD [ "entrypoint.sh"]
+CMD ["entrypoint.sh"]
